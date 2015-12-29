@@ -1,0 +1,24 @@
+SELECT S.name
+FROM Song S, IsOn I, Album A
+WHERE S.songid = I.songid AND I.albumid = A.albumid AND A.genre = 'Pop';
+
+This query finds the names of all the songs on Pop albums, which could be
+useful for recommending songs to users.
+
+SELECT S.name
+FROM Song S, Rates R
+WHERE S.songid = R.songid AND R.rating = 1;
+
+This query finds the names of all the songs that have recieved a rating of 1
+from at least one person. 
+
+SELECT S.name
+FROM Song S, MusicVideo M
+WHERE S.songid = M.songid;
+
+This query finds the names of all songs that have a music video in the
+database.
+
+
+
+
