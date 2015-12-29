@@ -1,0 +1,168 @@
+CREATE ASSERTION RecordCheck
+CHECK(
+NOT EXISTS(SELECT R.recordname 
+	   FROM RecordingLabel R 
+	   WHERE R.recordname NOT IN (SELECT A.recordname FROM Album A))
+
+CREATE ASSERTION IsOnAlbum
+CHECK(
+NOT EXIST(SELECT A.albumid
+	  FROM Album A
+	  WHERE A.albumid NOT IN (SELECT S.albumid FROM IsOn S))
+
+CREATE ASSERTION IsOnSong
+CHECK(
+NOT EXIST(SELECT S.songid
+	  FROM Song S
+	  WHERE S.songid NOT IN (SELECT I.songid FROM IsOn I))
+
+CREATE ASSERTION HasSignedRecordingLabel
+CHECK(
+NOT EXIST(SELECT R.name
+	  FROM RecordingLabel R
+	  WHERE R.name NOT IN (SELECT H.recordname FROM HasSigned H))
+
+CHECK ASSERTION SungBySong
+CHECK(
+NOT EXIST (SELECT S.songid
+	   FROM Song S
+	   WHERE S.songid NOT IN (SELECT B.songid FROM SungBy B))
+
+CHECK ASSERTION SungByArtist
+CHECK(
+NOT EXIST (SELECT A.name
+	   FROM Artist A
+	   WHERE A.name NOT IN (SELECT B.artistname FROM SungBy B))
+
+CREATE TABLE `Album` (
+  `albumid` int(11) NOT NULL AUTO_INCREMENT,
+  `albumname` varchar(100) DEFAULT NULL,
+  `year` year(4) DEFAULT NULL,
+  `genre` varchar(50) DEFAULT NULL,
+  `recordname` varchar(100) DEFAULT NULL,
+  PRIMARY KEY (`albumid`),
+  KEY `recordname` (`recordname`),
+  CONSTRAINT `Album_ibfk_1` FOREIGN KEY (`recordname`) REFERENCES
+`RecordingLabel` (`name`) ON DELETE NO ACTION
+) 
+
+CREATE TABLE `Artist` (
+  `name` varchar(100) NOT NULL DEFAULT '',
+  `bio` varchar(1000) DEFAULT NULL,
+  PRIMARY KEY (`name`)
+)
+
+CREATE TABLE `Band` (
+  `name` varchar(100) NOT NULL DEFAULT '',
+  `numppl` int(11) DEFAULT NULL,
+  PRIMARY KEY (`name`),
+  CONSTRAINT `Band_ibfk_1` FOREIGN KEY (`name`) REFERENCES `Artist` (`name`)
+ON DELETE CASCADE
+)
+
+
+CREATE TABLE `Customer` (
+  `customerid` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) DEFAULT NULL,
+  `dob` date DEFAULT NULL,
+  PRIMARY KEY (`customerid`)
+)
+
+
+CREATE TABLE `HasSigned` (
+  `recordname` varchar(100) DEFAULT NULL,
+  `artistname` varchar(100) NOT NULL DEFAULT '',
+  `since` date DEFAULT NULL,
+  PRIMARY KEY (`artistname`),
+  KEY `recordname` (`recordname`),
+  CONSTRAINT `HasSigned_ibfk_1` FOREIGN KEY (`artistname`) REFERENCES `Artist`
+(`name`) ON DELETE CASCADE,
+  CONSTRAINT `HasSigned_ibfk_2` FOREIGN KEY (`recordname`) REFERENCES
+`RecordingLabel` (`name`) ON DELETE CASCADE
+) 
+
+CREATE TABLE `IsOn` (
+  `songid` int(11) NOT NULL,
+  `albumid` int(11) NOT NULL,
+  PRIMARY KEY (`songid`,`albumid`),
+  KEY `albumid` (`albumid`),
+  CONSTRAINT `IsOn_ibfk_1` FOREIGN KEY (`songid`) REFERENCES `Song` (`songid`)
+ON DELETE CASCADE,
+  CONSTRAINT `IsOn_ibfk_2` FOREIGN KEY (`albumid`) REFERENCES `Album`
+(`albumid`) ON DELETE CASCADE
+)
+
+CREATE TABLE `IsPartOf` (
+  `musicianname` varchar(100) DEFAULT NULL,
+  `bandname` varchar(100) DEFAULT NULL,
+  KEY `musicianname` (`musicianname`),
+  KEY `bandname` (`bandname`),
+  CONSTRAINT `IsPartOf_ibfk_1` FOREIGN KEY (`musicianname`) REFERENCES
+`Musician` (`name`) ON DELETE CASCADE,
+  CONSTRAINT `IsPartOf_ibfk_2` FOREIGN KEY (`bandname`) REFERENCES `Band`
+(`name`) ON DELETE CASCADE
+) 
+
+CREATE TABLE `MusicVideo` (
+  `url` varchar(200) NOT NULL DEFAULT '',
+  `minutes` int(11) DEFAULT NULL,
+  `seconds` int(11) DEFAULT NULL,
+  `views` int(11) DEFAULT NULL,
+  `songid` int(11) NOT NULL,
+  PRIMARY KEY (`url`),
+  UNIQUE KEY `songid` (`songid`),
+  CONSTRAINT `MusicVideo_ibfk_1` FOREIGN KEY (`songid`) REFERENCES `Song`
+(`songid`) ON DELETE CASCADE
+)
+
+CREATE TABLE `Musician` (
+  `name` varchar(100) NOT NULL DEFAULT '',
+  `instrument` varchar(50) DEFAULT NULL,
+  PRIMARY KEY (`name`),
+  CONSTRAINT `Musician_ibfk_1` FOREIGN KEY (`name`) REFERENCES `Artist`
+(`name`) ON DELETE CASCADE
+)
+
+CREATE TABLE `Rates` (
+  `customerid` int(11) NOT NULL DEFAULT '0',
+  `songid` int(11) NOT NULL DEFAULT '0',
+  `rating` int(11) DEFAULT NULL,
+  PRIMARY KEY (`customerid`,`songid`),
+  KEY `songid` (`songid`),
+  CONSTRAINT `Rates_ibfk_1` FOREIGN KEY (`customerid`) REFERENCES `Customer`
+(`customerid`) ON DELETE CASCADE,
+  CONSTRAINT `Rates_ibfk_2` FOREIGN KEY (`songid`) REFERENCES `Song`
+(`songid`) ON DELETE CASCADE
+)
+
+CREATE TABLE `RecordingLabel` (
+  `name` varchar(100) NOT NULL DEFAULT '',
+  `address` varchar(300) DEFAULT NULL,
+  `website` varchar(200) DEFAULT NULL,
+  PRIMARY KEY (`name`)
+)
+
+CREATE TABLE `Song` (
+  `songid` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) DEFAULT NULL,
+  `minutes` int(11) DEFAULT NULL,
+  `seconds` int(11) DEFAULT NULL,
+  `trackno` int(11) DEFAULT NULL,
+  PRIMARY KEY (`songid`)
+) 
+
+CREATE TABLE `SungBy` (
+  `songid` int(11) NOT NULL,
+  `artistname` varchar(100) NOT NULL,
+  PRIMARY KEY (`songid`,`artistname`),
+  KEY `artistname` (`artistname`),
+  CONSTRAINT `SungBy_ibfk_1` FOREIGN KEY (`songid`) REFERENCES `Song`
+(`songid`) ON DELETE CASCADE,
+  CONSTRAINT `SungBy_ibfk_2` FOREIGN KEY (`artistname`) REFERENCES `Artist`
+(`name`) ON DELETE CASCADE
+) 
+
+
+
+
+
